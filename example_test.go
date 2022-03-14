@@ -7,6 +7,7 @@ import (
 )
 
 func Example() {
+	//nolint:structcheck
 	type myType struct {
 		a, b int
 	}
