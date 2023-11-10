@@ -204,6 +204,19 @@ func (w diffPrinter) diff(av, bv reflect.Value) {
 		}
 	case reflect.Struct:
 		for i := 0; i < av.NumField(); i++ {
+			af := av.Field(i)
+			bf := bv.Field(i)
+			avDNC := af.Type().String() == "pragma.DoNotCompare"
+			bvDNC := bf.Type().String() == "pragma.DoNotCompare"
+			if avDNC && bvDNC {
+				return
+			}
+			if avDNC != bvDNC {
+				w.printf("cannot compare types %s and %s", av.Type(), bv.Type())
+				return
+			}
+		}
+		for i := 0; i < av.NumField(); i++ {
 			w.relabel(at.Field(i).Name).diff(av.Field(i), bv.Field(i))
 		}
 	default:
