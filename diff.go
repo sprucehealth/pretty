@@ -126,6 +126,28 @@ func (w diffPrinter) diff(av, bv reflect.Value) {
 		}
 	}
 
+	// Look for a method "func (T1) Equal(T2)" or "Equals" on the values and if
+	// found then use that to compare the values.
+	for _, v := range [][2]reflect.Value{{av, bv}, {bv, av}} {
+		v1, v2 := v[0], v[1]
+		t1, t2 := v1.Type(), v2.Type()
+		equalMethod, ok := t1.MethodByName("Equal")
+		if !ok {
+			equalMethod, ok = t1.MethodByName("Equals")
+		}
+		if ok {
+			equalFnType := reflect.FuncOf([]reflect.Type{t1, t2}, []reflect.Type{reflect.TypeOf(true)}, false)
+			equalFn := equalMethod.Func
+			if equalFn.Type().AssignableTo(equalFnType) {
+				res := equalFn.Call([]reflect.Value{v1, v2})
+				if !res[0].Bool() {
+					w.printf("%+#v != %+#v", v1, v2)
+				}
+				return
+			}
+		}
+	}
+
 	switch kind := at.Kind(); kind {
 	case reflect.Bool:
 		if a, b := av.Bool(), bv.Bool(); a != b {

@@ -21,7 +21,7 @@ type formatter struct {
 // breaks and tabs. Object f responds to the "%v" formatting verb when both the
 // "#" and " " (space) flags are set, for example:
 //
-//     fmt.Sprintf("%# v", Formatter(x))
+//	fmt.Sprintf("%# v", Formatter(x))
 //
 // If one of these two flags is not set, or any other verb is used, f will
 // format x according to the usual rules of package fmt.
@@ -36,13 +36,13 @@ func (fo formatter) String() string {
 
 func (fo formatter) passThrough(f fmt.State, c rune) {
 	s := "%"
-	for i := 0; i < 128; i++ {
+	for i := range 128 {
 		if f.Flag(i) {
 			s += string(rune(i))
 		}
 	}
 	if w, ok := f.Width(); ok {
-		s += fmt.Sprintf("%d", w)
+		s += strconv.Itoa(w)
 	}
 	if p, ok := f.Precision(); ok {
 		s += fmt.Sprintf(".%d", p)
